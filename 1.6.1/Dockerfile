@@ -15,7 +15,6 @@ FROM debian:jessie
 MAINTAINER Clemens Stolle klaemo@apache.org
 
 # Install instructions from https://cwiki.apache.org/confluence/display/COUCHDB/Debian
-
 RUN groupadd -r couchdb && useradd -d /var/lib/couchdb -g couchdb couchdb
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
@@ -27,6 +26,12 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     libnspr4 \
     libnspr4-0d \
   && rm -rf /var/lib/apt/lists/*
+
+RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.0.1-amd64.deb && \
+    dpkg -i filebeat-6.0.1-amd64.deb
+
+#Add file beat autostart
+RUN update-rc.d filebeat defaults 95 10
 
 # grab gosu for easy step-down from root and tini for signal handling
 RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
@@ -90,11 +95,14 @@ RUN buildDeps=' \
     /usr/local/lib/couchdb /usr/local/etc/couchdb \
     /usr/local/var/lib/couchdb /usr/local/var/log/couchdb /usr/local/var/run/couchdb \
   && mkdir -p /var/lib/couchdb \
-  && sed -e 's/^bind_address = .*$/bind_address = 0.0.0.0/' -i /usr/local/etc/couchdb/default.ini \
-  && sed -e 's!/usr/local/var/log/couchdb/couch.log$!/dev/null!' -i /usr/local/etc/couchdb/default.ini
+  && sed -e 's/^bind_address = .*$/bind_address = 0.0.0.0/' -i /usr/local/etc/couchdb/default.ini
 
+COPY ./couchdb.logrotate /etc/logrotate.d/
 COPY ./docker-entrypoint.sh /
-RUN chmod +x /docker-entrypoint.sh
+COPY ./filebeat.yml /etc/filebeat/
+RUN chmod +x /docker-entrypoint.sh && \
+    chmod go-w /etc/filebeat/filebeat.yml
+
 
 # Define mountable directories.
 VOLUME ["/usr/local/var/lib/couchdb"]

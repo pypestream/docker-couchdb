@@ -1,0 +1,9 @@
+/usr/local/var/log/couchdb/*.log {
+    maxsize 300M
+    hourly
+    missingok
+    rotate 1
+    compress
+    notifempty
+    create 644 couchdb couchdb
+}

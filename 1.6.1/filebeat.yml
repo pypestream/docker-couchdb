@@ -1,0 +1,8 @@
+filebeat.prospectors:
+- type: log
+  enabled: true
+  paths:
+    - /usr/local/var/log/couchdb/couch.log
+
+output.logstash:
+  hosts: ["10.0.213.39:5044"]

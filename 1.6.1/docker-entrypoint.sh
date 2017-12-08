@@ -30,6 +30,9 @@ if [ "$1" = 'couchdb' ]; then
 	chmod 664 /usr/local/etc/couchdb/*.ini
 	chmod 775 /usr/local/etc/couchdb/*.d
 
+	service filebeat start
+
+
 	if [ "$COUCHDB_USER" ] && [ "$COUCHDB_PASSWORD" ]; then
 		# Create admin
 		printf "[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_PASSWORD" > /usr/local/etc/couchdb/local.d/docker.ini
